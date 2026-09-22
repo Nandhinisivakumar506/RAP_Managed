@@ -1,0 +1,73 @@
+@Metadata.layer: #CORE
+@UI: {
+  headerInfo: { typeName: 'Order',
+                typeNamePlural: 'Order',
+                title: { type: #STANDARD, label: 'Travel', value: 'OrderNumber' } } }
+
+annotate entity z_sorder_data_def with
+
+{
+  @UI.facet: [ {
+                 purpose:         #STANDARD,
+                 type:            #IDENTIFICATION_REFERENCE,
+                 label:           'Order',
+                 position:        10 } ]
+
+  @UI: {  lineItem:       [ { position: 10, label: 'Order Number' } ],
+          identification: [ { position: 10, label: 'Order Number' } ],
+          selectionField: [ { position: 10 } ] }
+  OrderNumber;
+  @UI: {  lineItem:       [ { position: 20 } ],
+          identification: [ { position: 20 } ],
+          selectionField: [ { position: 20 } ] }
+  @Consumption.valueHelpDefinition: [{ entity: { name: 'Z_F4_CUSTOMER', element: 'customer' }, useForValidation: true }]
+  CustomerNumber;
+  @UI: {  lineItem:       [ { position: 30 } ] ,
+          identification: [ { position: 30 } ]}
+  @Consumption.valueHelpDefinition: [{ entity: { name: 'Z_F4_PLANT', element: 'plant' }, useForValidation: true }]
+  Plant;
+  @UI: {  lineItem:       [ { position: 40 } ] ,
+          identification: [ { position: 40 } ]}
+  @Consumption.valueHelpDefinition: [{ entity: { name: 'Z_F4_MATERIAL', element: 'material_no' },
+  additionalBinding: [ { localElement: 'Plant', // Field on Object Page
+     element: 'plant' //Field from F4 Help view
+         }]  , useForValidation: true }]
+  MaterialNumber;
+  @UI: {  lineItem:       [ { position: 50 } ] ,
+          identification: [ { position: 50 } ]}
+  Quantity;
+  @UI: {  lineItem:       [ { position: 60 } ] ,
+          identification: [ { position: 60 } ]}
+  Uom;
+  @UI: {  lineItem:       [ { position: 70, label: 'Unit Price' } ] ,
+          identification: [ { position: 70, label: 'Unit Price' } ]}
+  UnitPrice;
+  @UI: {  lineItem:       [ { position: 80 } ] ,
+          identification: [ { position: 80 } ]}
+  NetPrice;
+  @UI: {  lineItem:       [ { position: 90 } ] ,
+          identification: [ { position: 90 } ]}
+  @Consumption.valueHelpDefinition: [{ entity: { name: 'Z_F4_CURRENCY_KEY', element: 'waers' }, useForValidation: true }]
+  CurrencyCode;
+  @UI: {  lineItem:       [ { position: 110 } ] ,
+         identification: [ { position: 110 } ]}
+  CreatedBy;
+  @UI: {  lineItem:       [ { position: 120 } ] ,
+         identification: [ { position: 120 } ]}
+  CreatedAt;
+  @UI: {  lineItem:       [ { position: 130 } ] ,
+         identification: [ { position: 130 } ]}
+  LocLastChangedBy;
+  @UI: {  lineItem:       [ { position: 140 } ] ,
+         identification: [ { position: 140 } ]}
+  LocLastChangedAt;
+  @UI: {  lineItem:       [ { position: 160 } ] ,
+         identification: [ { position: 160 } ]}
+  LastChangedAt;
+  @UI: { identification: [ { position: 170, label:'Status' } ],
+  lineItem: [{ label:'Status', position: 170} ,
+  { type:#FOR_ACTION, dataAction: 'approve', label:'Approve', position: 171},
+  { type: #FOR_ACTION, dataAction: 'reject',  label: 'Reject',  position: 180  }]}
+  Status;
+
+}
