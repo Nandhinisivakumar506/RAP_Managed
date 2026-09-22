@@ -1,0 +1,28 @@
+@EndUserText.label : 'Sales order'
+@AbapCatalog.enhancement.category : #NOT_EXTENSIBLE
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #ALLOWED
+define table zsorder {
+
+  key client          : mandt not null;
+  key order_number    : abap.char(10) not null;
+  customer_number     : kunnr;
+  material_number     : matnr;
+  plant               : werks_d;
+  @Semantics.quantity.unitOfMeasure : 'zsorder.uom'
+  quantity            : menge_d;
+  uom                 : meins;
+  @Semantics.amount.currencyCode : 'zsorder.currency_code'
+  unit_price          : netpr;
+  @Semantics.amount.currencyCode : 'zsorder.currency_code'
+  net_price           : netwr;
+  currency_code       : waers;
+  status              : abap.char(3);
+  created_by          : abp_creation_user;
+  created_at          : abp_creation_tstmpl;
+  loc_last_changed_by : abp_locinst_lastchange_user;
+  loc_last_changed_at : abp_locinst_lastchange_tstmpl;
+  last_changed_at     : abp_lastchange_tstmpl;
+
+}
