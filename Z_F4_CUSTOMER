@@ -1,0 +1,9 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'F4 Help for Customer'
+@Metadata.ignorePropagatedAnnotations: true
+define view entity Z_F4_CUSTOMER as select from kna1
+{
+    
+   key kunnr as customer,
+       name1 as name
+}
