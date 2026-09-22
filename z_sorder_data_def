@@ -1,0 +1,31 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'sales order'
+@Metadata.ignorePropagatedAnnotations: true
+@Metadata.allowExtensions: true
+define root view entity z_sorder_data_def as select from zsorder
+{
+  @EndUserText.label: 'Order Number'
+    key order_number as OrderNumber,
+    customer_number as CustomerNumber,
+    material_number as MaterialNumber,
+    plant as Plant,
+     @Semantics.quantity.unitOfMeasure: 'uom'
+    quantity as Quantity,
+    uom as Uom,
+    @Semantics.amount.currencyCode: 'CurrencyCode'
+    unit_price as UnitPrice,
+    @Semantics.amount.currencyCode: 'CurrencyCode'
+    net_price as NetPrice,
+    currency_code as CurrencyCode,
+    status as Status,
+    @Semantics.user.createdBy: true
+    created_by as CreatedBy,
+    @Semantics.systemDateTime.createdAt: true
+    created_at as CreatedAt,
+   @Semantics.user.localInstanceLastChangedBy: true
+    loc_last_changed_by as LocLastChangedBy,
+    @Semantics.systemDateTime.localInstanceLastChangedAt: true
+    loc_last_changed_at as LocLastChangedAt,
+    @Semantics.systemDateTime.lastChangedAt: true
+    last_changed_at as LastChangedAt
+}
