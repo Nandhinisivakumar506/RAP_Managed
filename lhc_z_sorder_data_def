@@ -1,0 +1,233 @@
+CLASS lhc_z_sorder_data_def DEFINITION INHERITING FROM cl_abap_behavior_handler.
+  PRIVATE SECTION.
+
+    METHODS get_instance_authorizations FOR INSTANCE AUTHORIZATION
+      IMPORTING keys REQUEST requested_authorizations FOR z_sorder_data_def RESULT result.
+
+    METHODS approve FOR MODIFY
+      IMPORTING keys FOR ACTION z_sorder_data_def~approve.
+
+    METHODS reject FOR MODIFY
+      IMPORTING keys FOR ACTION z_sorder_data_def~reject.
+
+ "   METHODS calculateNetPrice FOR DETERMINE ON save
+  "    IMPORTING keys FOR z_sorder_data_def~calculateNetPrice.
+      METHODS calculateNetPrice FOR DETERMINE ON MODIFY
+      IMPORTING keys FOR z_sorder_data_def~calculateNetPrice.
+
+    METHODS setInitialStatus FOR DETERMINE ON save
+      IMPORTING keys FOR z_sorder_data_def~setInitialStatus.
+
+    METHODS validatePrice FOR VALIDATE ON SAVE
+      IMPORTING keys FOR z_sorder_data_def~validatePrice.
+
+    METHODS validateQuantity FOR VALIDATE ON SAVE
+      IMPORTING keys FOR z_sorder_data_def~validateQuantity.
+
+ENDCLASS.
+
+CLASS lhc_z_sorder_data_def IMPLEMENTATION.
+
+  METHOD get_instance_authorizations.
+  ENDMETHOD.
+
+ "   Validations {     EML language (Entity Manipulation Language )...
+  METHOD validateQuantity.
+  READ ENTITIES OF z_sorder_data_def  IN LOCAL MODE
+    ENTITY z_sorder_data_def
+    FIELDS (
+      Quantity
+    )
+    WITH CORRESPONDING #( keys )
+    RESULT DATA(lt_orders).
+
+  LOOP AT lt_orders INTO DATA(ls_order).
+
+    IF ls_order-Quantity <= 0.
+
+      "Report failed instance
+      APPEND VALUE #(    "collects error
+        %tky = ls_order-%tky
+      ) TO failed-z_sorder_data_def.
+
+      APPEND VALUE #(                  " display error on screen
+        %tky = ls_order-%tky
+        %msg = new_message_with_text(
+          severity = if_abap_behv_message=>severity-error
+          text     = 'Quantity must be greater than zero'
+        )
+
+        %element-Quantity =
+          if_abap_behv=>mk-on                       "  On/off - highlight the Quantity field...
+
+      ) TO reported-z_sorder_data_def.
+
+    ENDIF.
+
+  ENDLOOP.
+  ENDMETHOD.
+
+
+    METHOD validatePrice.
+
+  READ ENTITIES OF z_sorder_data_def IN LOCAL MODE
+    ENTITY z_sorder_data_def
+    FIELDS ( UnitPrice )
+    WITH CORRESPONDING #( keys )
+    RESULT DATA(lt_orders).
+
+  LOOP AT lt_orders INTO DATA(ls_order).
+
+    IF ls_order-UnitPrice <= 0.
+
+      "Report failed instance
+      APPEND VALUE #(
+        %tky = ls_order-%tky
+      ) TO failed-z_sorder_data_def.           " failed tells RAP - this records failed.
+
+      "Report error message
+      APPEND VALUE #(
+        %tky = ls_order-%tky                   " technical key.
+
+        %msg = new_message_with_text(
+          severity = if_abap_behv_message=>severity-error
+          text     = 'Unit Price must be greater than zero'
+        )
+
+        %element-UnitPrice = if_abap_behv=>mk-on    " specifically which element..
+
+      ) TO reported-z_sorder_data_def.              " report tells RAP - message explaining ..
+
+    ENDIF.
+
+  ENDLOOP.
+
+ENDMETHOD.
+
+  "   Validations }
+
+  "  Determination {
+
+    METHOD calculateNetPrice.           " Calculating the Quantity and unit price...
+
+ READ ENTITIES OF z_sorder_data_def IN LOCAL MODE  "gets value from transactional buffer
+      ENTITY z_sorder_data_def
+      FIELDS (
+        Quantity
+        UnitPrice
+      )
+      WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_orders).
+ MODIFY ENTITIES OF z_sorder_data_def IN LOCAL MODE
+      ENTITY z_sorder_data_def
+      UPDATE FIELDS (
+        NetPrice
+      )
+      WITH VALUE #(
+        FOR ls_order IN lt_orders
+        (
+          %tky = ls_order-%tky
+
+          NetPrice =
+            ls_order-Quantity *
+            ls_order-UnitPrice
+
+         %control-NetPrice = if_abap_behv=>mk-off  "this flag marks netprice has been changed and needs to be updated
+        )
+      ).
+  ENDMETHOD.
+
+   METHOD setInitialStatus.         " Initially sets a values 'NEW' in field..
+
+   READ ENTITIES OF z_sorder_data_def IN LOCAL MODE
+    ENTITY z_sorder_data_def
+    FIELDS (
+      Status
+    )
+    WITH CORRESPONDING #( keys )
+    RESULT DATA(lt_orders).
+
+  MODIFY ENTITIES OF z_sorder_data_def IN LOCAL MODE
+    ENTITY z_sorder_data_def
+    UPDATE FIELDS (
+      Status
+    )
+    WITH VALUE #(
+      FOR ls_order IN lt_orders
+      (
+        %tky = ls_order-%tky
+
+        Status = 'NEW'
+
+        %control-Status =
+          if_abap_behv=>mk-on
+      )
+    ).
+
+  ENDMETHOD.
+  "  Determination }
+
+  "   Actions {
+  METHOD approve.
+
+  READ ENTITIES OF z_sorder_data_def IN LOCAL MODE
+    ENTITY z_sorder_data_def
+    FIELDS (
+      Status
+    )
+    WITH CORRESPONDING #( keys )
+    RESULT DATA(lt_orders).
+
+  MODIFY ENTITIES OF z_sorder_data_def IN LOCAL MODE
+    ENTITY z_sorder_data_def
+    UPDATE FIELDS (
+      Status
+    )
+    WITH VALUE #(
+      FOR ls_order IN lt_orders where ( Status = 'NEW' )
+      (
+        %tky = ls_order-%tky
+
+        Status = 'APP'
+
+        %control-Status =
+          if_abap_behv=>mk-on
+      )
+    ).
+
+  ENDMETHOD.
+
+  METHOD reject.
+
+  READ ENTITIES OF z_sorder_data_def IN LOCAL MODE
+    ENTITY z_sorder_data_def
+    FIELDS (
+      Status
+    )
+    WITH CORRESPONDING #( keys )
+    RESULT DATA(lt_orders).
+
+  MODIFY ENTITIES OF z_sorder_data_def IN LOCAL MODE
+    ENTITY z_sorder_data_def
+    UPDATE FIELDS (
+      Status
+    )
+    WITH VALUE #(
+      FOR ls_order IN lt_orders where ( Status = 'NEW' )
+      (
+        %tky = ls_order-%tky
+
+        Status = 'REJ'
+
+        %control-Status =
+          if_abap_behv=>mk-on
+      )
+    ).
+
+
+  ENDMETHOD.
+
+"   Actions }
+
+
+ENDCLASS.
